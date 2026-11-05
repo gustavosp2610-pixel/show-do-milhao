@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080f24">
+  <meta name="description" content="Conhecimento que vale um milhão. Jogue o Show do Milhão no navegador e veja o ranking dos melhores resultados.">
+  <title>Show do Milhão • Conhecimento em jogo</title>
+  <link rel="icon" href="assets/emblema.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <script defer src="js/supabase.js"></script>
+  <script defer src="js/ranking.js"></script>
+  <script defer src="js/app.js"></script>
+  <script defer src="js/jogo.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <header class="header"><a class="brand" href="#inicio" aria-label="Show do Milhão, início"><img src="assets/emblema.svg" width="38" height="38" alt=""><span>SHOW DO <strong>MILHÃO</strong></span></a><nav aria-label="Navegação principal"><a href="#como-funciona">Como funciona</a><a href="#jogar">Jogar</a><a href="#ranking">Ranking <span aria-hidden="true">↗</span></a></nav></header>
+  <main id="conteudo">
+    <section class="hero" id="inicio" aria-labelledby="titulo">
+      <div class="hero-copy"><p class="eyebrow"><span class="dot"></span> PROJETO ESCOLAR · CONHECIMENTO EM JOGO</p><h1 id="titulo">Toda grande conquista começa com uma <em>boa resposta.</em></h1><p class="intro">Bem-vindo ao <strong>Show do Milhão</strong>. Nove perguntas, três dificuldades e uma jornada para colocar seus conhecimentos à prova.</p><a class="button primary" href="#jogar">Jogar agora <span aria-hidden="true">↗</span></a><a class="text-link" href="#ranking">Ver o ranking <span aria-hidden="true">↓</span></a><div class="hero-stats"><span><strong>09</strong> perguntas</span><span><strong>03</strong> dificuldades</span><span><strong>01</strong> grande desafio</span></div></div>
+      <div class="prize-stage"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="prize-card"><div class="card-top"><span>O GRANDE PRÊMIO</span><span aria-hidden="true">✦</span></div><img class="emblem" src="assets/emblema.svg" width="100" height="100" alt=""><p class="show-name">SHOW DO <strong>MILHÃO</strong></p><div class="prize-amount"><span>R$</span> 1.000.000<span>,00</span></div><p class="prize-note">Prêmio fictício. O conhecimento é de verdade.</p><div class="card-bottom"><span>9 RESPOSTAS ATÉ O TOPO</span><span aria-hidden="true">◇ ◇ ◇</span></div></div><span class="stage-caption">SEU PRÓXIMO DESAFIO ESTÁ À ALTURA.</span></div>
+    </section>
+    <section class="rules section" id="como-funciona" aria-labelledby="regras-titulo"><div class="section-heading"><div><p class="eyebrow">01 / O DESAFIO</p><h2 id="regras-titulo">Conhecimento que <em>vale mais.</em></h2></div><p>Uma pergunta de cada vez.<br>Uma nova chance de chegar mais longe.</p></div>
+      <div class="rule-grid"><article><span class="step">01</span><h3>Entre no jogo</h3><p>Jogue aqui no site ou no terminal, com o jogo em Python. A partida tem nove perguntas: três fáceis, três médias e três difíceis.</p></article><article><span class="step">02</span><h3>Escolha sua resposta</h3><p>Responda com A, B, C ou D. Cada acerto substitui o prêmio anterior pelo valor do próximo nível. Use as ajudas com sabedoria.</p></article><article><span class="step">03</span><h3>Decida até onde ir</h3><p>Você pode parar quando quiser. Ao parar ou errar, mantém o valor do último acerto; sem acertos, o prêmio é zero.</p></article></div>
+      <div class="ladder-heading"><h3>A escada do milhão</h3><span>VALORES FICTÍCIOS · NÃO ACUMULATIVOS</span></div><ol class="prize-ladder"><li><span>01 · FÁCIL</span><strong>R$ 1.000</strong></li><li><span>02 · FÁCIL</span><strong>R$ 5.000</strong></li><li><span>03 · FÁCIL</span><strong>R$ 10.000</strong></li><li><span>04 · MÉDIA</span><strong>R$ 25.000</strong></li><li><span>05 · MÉDIA</span><strong>R$ 50.000</strong></li><li><span>06 · MÉDIA</span><strong>R$ 100.000</strong></li><li><span>07 · DIFÍCIL</span><strong>R$ 200.000</strong></li><li><span>08 · DIFÍCIL</span><strong>R$ 500.000</strong></li><li class="million"><span>09 · O MILHÃO</span><strong>R$ 1.000.000</strong></li></ol>
+    </section>
+    <section class="section game-section" id="jogar" aria-labelledby="jogar-titulo"><div class="section-heading"><div><p class="eyebrow">02 / SUA VEZ</p><h2 id="jogar-titulo">Valendo <em>um milhão.</em></h2></div><p>Jogue aqui mesmo, no navegador.<br>Seu resultado entra direto no ranking.</p></div>
+      <div class="game-panel" id="jogo" aria-busy="false">
+        <form class="game-start" id="jogo-inicio" novalidate>
+          <span class="status-icon" aria-hidden="true">✦</span>
+          <h3>Pronto para o desafio?</h3>
+          <p>Nove perguntas, quatro ajudas e nenhuma volta atrás. As respostas ficam guardadas no servidor, então não dá para colar olhando o código.</p>
+          <div class="start-field"><label for="jogo-apelido">Seu apelido</label><div class="start-row"><input id="jogo-apelido" name="apelido" type="text" maxlength="40" autocomplete="nickname" placeholder="Como você quer aparecer no ranking" required><button class="button primary" type="submit">Começar partida <span aria-hidden="true">→</span></button></div></div>
+          <ul class="help-list" aria-label="Ajudas disponíveis"><li><strong>Cartas</strong> eliminam de 0 a 3 erradas</li><li><strong>Universitários</strong> dão 3 palpites</li><li><strong>Plateia</strong> vota em porcentagem</li><li><strong>3 pulos</strong> trocam a pergunta</li></ul>
+        </form>
+        <div class="game-play" id="jogo-partida" hidden>
+          <div class="game-hud"><div><span class="hud-label">Pergunta</span><strong id="hud-etapa">1/9</strong><span class="level" id="hud-nivel">FÁCIL</span></div><div><span class="hud-label">Valendo</span><strong class="gold" id="hud-valendo">R$ 1.000</strong></div><div><span class="hud-label">Garantido</span><strong id="hud-garantido">R$ 0</strong></div></div>
+          <ol class="game-steps" id="jogo-etapas" aria-hidden="true"></ol>
+          <p class="game-player" id="jogo-jogador"></p>
+          <h3 class="game-question" id="jogo-enunciado" tabindex="-1"></h3>
+          <div class="answers" id="jogo-alternativas" role="group" aria-label="Alternativas"></div>
+          <p class="feedback" id="jogo-feedback" role="status" aria-live="polite"></p>
+          <div class="help-result" id="jogo-ajuda" tabindex="-1" aria-live="polite" hidden></div>
+          <div class="game-actions"><div class="helps" role="group" aria-label="Ajudas"><button class="help" type="button" data-ajuda="cartas" title="Elimina de 0 a 3 alternativas erradas (1 vez)">Cartas</button><button class="help" type="button" data-ajuda="universitarios" title="Três universitários dão palpites (1 vez)">Universitários</button><button class="help" type="button" data-ajuda="plateia" title="A plateia vota em porcentagem (1 vez)">Plateia</button><button class="help" type="button" data-ajuda="pulo" title="Troca a pergunta por outra do mesmo nível">Pular <span class="count" id="jogo-pulos">3</span></button></div><div class="decide"><button class="button secondary" id="jogo-parar" type="button">Parar</button><button class="button primary" id="jogo-confirmar" type="button" disabled>Confirmar resposta</button></div></div>
+        </div>
+        <div class="game-end" id="jogo-fim" hidden>
+          <span class="status-icon end-icon" id="fim-icone" aria-hidden="true">✦</span>
+          <p class="eyebrow">FIM DE JOGO</p>
+          <h3 id="fim-titulo"></h3>
+          <p class="end-text" id="fim-texto"></p>
+          <p class="end-prize" id="fim-premio"></p>
+          <dl class="end-stats"><div><dt>Acertos</dt><dd id="fim-acertos"></dd></div><div><dt>Tempo</dt><dd id="fim-tempo"></dd></div></dl>
+          <div class="end-actions"><button class="button primary" id="jogo-novo" type="button">Jogar de novo</button><a class="button secondary" href="#ranking">Ver ranking <span aria-hidden="true">↓</span></a></div>
+        </div>
+        <p class="game-alert" id="jogo-erro" role="alert" hidden></p>
+      </div>
+    </section>
+    <section class="section ranking-section" id="ranking" aria-labelledby="ranking-titulo"><div class="section-heading"><div><p class="eyebrow">03 / QUEM CHEGOU MAIS LONGE</p><h2 id="ranking-titulo">Grandes respostas.<br><em>Grandes resultados.</em></h2></div><p>Os 10 melhores, do site e do terminal.<br>Seu melhor resultado é o que conta.</p></div>
+      <div class="ranking-panel"><div class="ranking-toolbar"><div class="filter"><label for="jogo-filtro">Selecione o jogo</label><select id="jogo-filtro" disabled><option value="">Aguardando configuração</option></select></div><button class="button secondary" id="atualizar" type="button"><span aria-hidden="true">↻</span> Atualizar ranking</button></div><div id="ranking-status" class="ranking-status" role="status" aria-live="polite"><span class="status-icon" aria-hidden="true">◇</span><h3>O próximo destaque pode ser você.</h3><p>Carregando os melhores resultados do Supabase…</p></div><div id="ranking-table-wrap" class="table-wrap" hidden><table><caption class="sr-only">Os dez melhores jogadores do jogo selecionado</caption><thead><tr><th scope="col">Posição</th><th scope="col">Jogo</th><th scope="col">Apelido</th><th scope="col">Prêmio</th><th scope="col">Tempo</th><th scope="col">Data</th></tr></thead><tbody id="ranking-body"></tbody></table></div><div class="ranking-footnote"><span><span class="dot"></span> Resultados reais, direto do Supabase</span><span id="ranking-updated">Nenhuma consulta realizada</span></div></div><p class="ranking-explanation">Classificação por maior prêmio, menor tempo, data mais antiga e ID da partida. Cada apelido aparece uma vez por jogo, com sua melhor partida. Datas no horário de Brasília.</p>
+    </section>
+    <section class="closing"><span aria-hidden="true">✦</span><h2>O melhor prêmio é<br>o que você <em>aprende.</em></h2><p>Um projeto sobre desafios, colaboração e novas descobertas.</p><a class="text-link" href="#inicio">Voltar ao topo ↑</a></section>
+  </main><footer><a class="brand" href="#inicio">SHOW DO <strong>MILHÃO</strong></a><p>Projeto escolar · Sem premiação financeira real.</p><span>Feito para aprender.</span></footer>
+  <noscript><p class="noscript">Ative o JavaScript para jogar e consultar o ranking. As regras continuam disponíveis nesta página.</p></noscript>
+</body>
+</html>

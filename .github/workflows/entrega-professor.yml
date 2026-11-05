@@ -1,0 +1,47 @@
+name: Entrega para o professor
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'ajudas.py'
+      - 'config.py'
+      - 'database.py'
+      - 'game_logic.py'
+      - 'main.py'
+      - 'requirements.txt'
+      - 'sql/**'
+      - 'tests/**'
+      - '.github/workflows/entrega-professor.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  preparar-entrega:
+    name: Testar e preparar arquivos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Executar testes
+        run: python -m unittest discover -s tests -v
+      - name: Montar pasta da entrega
+        run: |
+          mkdir -p entrega-show-do-milhao
+          cp README.md .env.example .gitignore config.py database.py game_logic.py main.py ajudas.py requirements.txt entrega-show-do-milhao/
+          cp -R site sql tests entrega-show-do-milhao/
+          printf 'Projeto Show do Milhao\nCodigo-fonte Python, site estatico, SQL e testes.\nPara rodar o Python: configure seu .env (nao incluido) e instale requirements.txt.\nO site em site/ tem o jogo web e o ranking, conectados ao Supabase (ver README.md).\n' > entrega-show-do-milhao/LEIA-ME-ENTREGA.txt
+      - name: Disponibilizar download na aba Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: show-do-milhao-entrega-professor
+          path: entrega-show-do-milhao/
+          if-no-files-found: error
+          retention-days: 30

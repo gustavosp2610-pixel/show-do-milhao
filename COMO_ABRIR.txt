@@ -1,0 +1,24 @@
+SHOW DO MILHÃO — COMO VER O TRABALHO
+====================================
+
+1) JOGAR NO SITE (precisa só de internet)
+   Dê dois cliques em "index.html" (nesta pasta) ou em "site/index.html".
+   O site abre no navegador. Vá em "Jogar", digite um apelido e jogue.
+   As perguntas vêm do Supabase e o resultado entra no ranking
+   (seção "Ranking" da mesma página).
+
+2) JOGO EM PYTHON (terminal)
+   - Instale as dependências:  python -m pip install -r requirements.txt
+   - Copie ".env.example" para ".env" e preencha SUPABASE_URL, SUPABASE_KEY
+     (chave secreta, fornecida pelo grupo) e JOGO_ID=1.
+   - Rode:  python main.py
+   As partidas do terminal aparecem no mesmo ranking do site.
+
+3) BANCO DE DADOS (Supabase)
+   - sql/schema.sql e sql/02_jogo_web.sql: estrutura completa do banco.
+   - O jogo do site roda nas funções web_* do banco: a resposta certa
+     nunca vai para o navegador.
+
+4) TESTES:  python -m unittest discover -s tests -v
+
+Mais detalhes no README.md.
