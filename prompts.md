@@ -4,6 +4,55 @@ Este documento registra os prompts utilizados no desenvolvimento e diagnóstico 
 
 ---
 
+## Roteiro resumido: prompts básicos de cada etapa
+
+Resumo dos pedidos feitos à IA, na ordem em que o projeto foi construído. Os registros detalhados de cada etapa vêm logo depois.
+
+| Etapa | Parte do projeto | Resultado |
+|---|---|---|
+| 1 | Planejamento | Divisão em Python, Supabase e site |
+| 2 | Banco de dados | `sql/schema.sql` |
+| 3 | Perguntas | 24 perguntas cadastradas no Supabase |
+| 4 | Jogo em Python | `main.py`, `game_logic.py`, `ajudas.py` |
+| 5 | Python + Supabase | `config.py`, `database.py`, `.env.example` |
+| 6 | Testes | `tests/` e `.github/workflows/testes.yml` |
+| 7 | Site | `site/index.html`, `site/css`, `site/js/ranking.js` |
+| 8 | Jogo no site | `sql/02_jogo_web.sql`, `site/js/jogo.js` |
+| 9 | Integração final | Tudo conectado ao mesmo Supabase |
+| 10 | Publicação | GitHub Pages e Actions |
+
+**1. Planejamento**
+> "Vamos fazer um Show do Milhão para a escola: jogo em Python, banco de dados no Supabase com ranking e um site onde dá para jogar. Divida o projeto em partes para um grupo, diga o que cada parte entrega e como elas se conectam."
+
+**2. Banco de dados no Supabase**
+> "Crie o SQL das tabelas do Show do Milhão no Supabase: perguntas (enunciado, alternativas A a D, correta, dificuldade fácil/média/difícil), partidas (apelido, valor ganho, tempo, acertos, motivo de encerramento, data), ajudas utilizadas e etapas de premiação de R$ 1.000 a R$ 1.000.000. Ative o RLS e não deixe o navegador ver as respostas certas."
+
+**3. Perguntas**
+> "Escreva 24 perguntas de conhecimentos gerais (8 fáceis, 8 médias e 8 difíceis), com 4 alternativas e só uma correta, no formato de INSERT para a tabela perguntas."
+
+**4. Jogo em Python**
+> "Faça o jogo em Python para o terminal: pede o apelido, sorteia 9 perguntas (3 de cada nível) sem repetir, prêmio substitutivo até R$ 1 milhão, opção de parar e quatro ajudas: cartas (elimina de 0 a 3 erradas), universitários (3 palpites), plateia (porcentagens que somam 100%) e 3 pulos. Separe em arquivos e comente o código."
+
+**5. Ligar o Python ao Supabase**
+> "Conecte o jogo Python ao Supabase com a biblioteca supabase-py. Leia URL e chave de um arquivo .env, busque as perguntas no banco e salve o resultado da partida e as ajudas usadas. Se a internet cair, não perca o resultado. Mostre o ranking Top 10 no terminal."
+
+**6. Testes**
+> "Crie testes automáticos com unittest que não precisem de internet: as cartas nunca eliminam a certa, a plateia soma 100%, os pulos funcionam e a vitória paga R$ 1 milhão. Crie também um GitHub Actions que rode os testes a cada push."
+
+**7. Site**
+> "Crie o site do Show do Milhão em HTML, CSS e JavaScript puro, azul e dourado, funcionando no celular: início, regras, escada de prêmios e ranking Top 10 lido do Supabase. O ranking ordena por maior prêmio e menor tempo e mostra só a melhor partida de cada apelido."
+
+**8. Jogo no site, sem dar para colar**
+> "Coloque o jogo dentro do site, com as mesmas regras do Python. A resposta certa não pode ir para o navegador e ninguém pode gravar um resultado falso no ranking. Faça a lógica rodar no Supabase (funções no banco) e o site só mostrar a pergunta e mandar a resposta."
+
+**9. Integração final**
+> "Cada um fez uma parte e, na hora de juntar, o site não ficou conectado com o jogo nem com o Supabase. Analise o repositório e o banco, encontre o que está errado e conecte tudo: partidas do site e do Python no mesmo ranking. Teste antes de entregar."
+
+**10. Publicação**
+> "Publique o site no GitHub Pages, confira se os testes e o pacote de entrega rodam no GitHub Actions e escreva um README e um COMO_ABRIR.txt explicando como jogar e como rodar o Python."
+
+---
+
 ## Prompt 1 — Desenvolvimento do Módulo do Jogo em Python (Terminal) Integrado ao Supabase
 
 ### Contexto / Solicitação
