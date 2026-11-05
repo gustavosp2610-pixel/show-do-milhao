@@ -124,13 +124,13 @@ class PartidaShowDoMilhao:
             ))
         disponiveis = []
         if "cartas" not in self.ajudas_usadas:
-            disponiveis.append("C = cartas")
+            disponiveis.append("1 = cartas")
         if "universitarios" not in self.ajudas_usadas:
-            disponiveis.append("U = universitários")
+            disponiveis.append("2 = universitários")
         if "plateia" not in self.ajudas_usadas:
-            disponiveis.append("L = plateia")
+            disponiveis.append("3 = plateia")
         if self.pulos_restantes and self.reservas[pergunta["dificuldade"]]:
-            disponiveis.append(f"S = pular ({self.pulos_restantes})")
+            disponiveis.append(f"4 = pular ({self.pulos_restantes})")
         print(" [P] Desistir | " + " | ".join(disponiveis))
 
     def executar(self) -> ResultadoPartida:
@@ -150,20 +150,22 @@ class PartidaShowDoMilhao:
                     if escolha in ("P", "PARAR", "DESISTIR"):
                         self.motivo_encerramento = "desistencia"
                         break
-                    if escolha == "C" and "cartas" not in self.ajudas_usadas:
+                    # Ajudas usam números para não confundir com as alternativas A-D
+                    # (antes "C" ativava as cartas em vez de responder C).
+                    if escolha in ("1", "CARTAS") and "cartas" not in self.ajudas_usadas:
                         resultado = cartas(correta)
                         eliminadas.update(resultado["eliminadas"])
                         self.ajudas_usadas.add("cartas")
                         self._registrar_ajuda(pergunta, "cartas", resultado)
                         print(f"Cartas eliminaram: {', '.join(resultado['eliminadas']) or 'nenhuma'}.")
                         continue
-                    if escolha == "U" and "universitarios" not in self.ajudas_usadas:
+                    if escolha in ("2", "U") and "universitarios" not in self.ajudas_usadas:
                         resultado = universitarios(correta)
                         self.ajudas_usadas.add("universitarios")
                         self._registrar_ajuda(pergunta, "universitarios", resultado)
                         print("Universitários: " + ", ".join(resultado["palpites"]))
                         continue
-                    if escolha == "L" and "plateia" not in self.ajudas_usadas:
+                    if escolha in ("3", "L") and "plateia" not in self.ajudas_usadas:
                         resultado = plateia(correta)
                         self.ajudas_usadas.add("plateia")
                         self._registrar_ajuda(pergunta, "plateia", resultado)
@@ -171,7 +173,7 @@ class PartidaShowDoMilhao:
                             f"{letra}: {votos}%" for letra, votos in resultado["votos"].items()
                         ))
                         continue
-                    if escolha == "S" and self.pulos_restantes and self.reservas[pergunta["dificuldade"]]:
+                    if escolha in ("4", "S") and self.pulos_restantes and self.reservas[pergunta["dificuldade"]]:
                         self.pulos_restantes -= 1
                         self._registrar_ajuda(pergunta, "pulo", {"etapa": indice + 1})
                         pergunta = self.reservas[pergunta["dificuldade"]].pop(0)
