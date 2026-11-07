@@ -82,8 +82,14 @@ input[type=range]{width:100%;accent-color:var(--cue);height:28px;margin:0}
 
 /* ---------- Studio ---------- */
 .studio{position:fixed;inset:0;background:var(--stage);overflow:hidden;color:var(--fg)}
-#cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:var(--stage)}
+#cam{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--stage)}
+#cam.fill{object-fit:cover}
 #cam.mirror{transform:scaleX(-1)}
+.frame-row{display:flex;align-items:center;justify-content:flex-start}
+.pill svg{width:16px;height:16px;flex:none}
+.pill.has-icon{display:inline-flex;align-items:center;gap:7px}
+.toast{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);margin:0;max-width:calc(100% - 48px);width:max-content;text-align:center;background:var(--scrim);border:1px solid var(--line);font-size:.92rem;font-weight:700;line-height:1.35;padding:10px 14px;border-radius:12px;pointer-events:none}
+.text-only .frame-row{display:none}
 .prompter{position:absolute;left:0;right:0;top:0;height:46%;padding-top:env(safe-area-inset-top,0px);background:linear-gradient(to bottom,var(--scrim) 0%,var(--scrim) 68%,transparent 100%)}
 .viewport{position:relative;height:100%;overflow:hidden;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 11%,#000 80%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 11%,#000 80%,transparent 100%)}
 .viewport:focus-visible{outline:none}
@@ -229,12 +235,19 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
   </div>
 
   <div id="countdown" class="countdown" hidden aria-live="assertive"></div>
+  <p id="toast" class="toast" hidden aria-live="polite"></p>
 
   <div class="controls">
+    <div class="frame-row">
+      <button id="fit" class="pill has-icon" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/></svg>
+        <span id="fitLabel">Imagem inteira</span>
+      </button>
+    </div>
     <div class="row">
       <button id="back" class="pill" type="button">‹ Texto</button>
       <span class="timer" aria-live="off"><span class="dot" aria-hidden="true"></span><span id="timerText">00:00</span></span>
-      <button id="flip" class="pill" type="button">Virar câmera</button>
+      <button id="flip" class="pill" type="button">Trocar câmera</button>
     </div>
     <div class="row">
       <div class="speed" role="group" aria-label="Velocidade">
@@ -274,7 +287,8 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
   const els = {};
   ['editor','studio','result','script','clear','estimate','wpm','wpmOut','size','sizeOut','countdownOpt','open',
    'cam','prompter','viewport','text','chip','nocam','nocamMsg','retry','textOnly','countdown','back','timerText',
-   'flip','slower','faster','speedOut','rec','restart','playback','fileinfo','share','download','again','edit']
+   'flip','slower','faster','speedOut','rec','restart','playback','fileinfo','share','download','again','edit',
+   'fit','fitLabel','toast']
     .forEach((id) => { els[id] = $(id); });
 
   const store = {
@@ -288,7 +302,8 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
     recording: false, countingDown: false, startTime: 0, elapsed: 0,
     scrolling: false, paused: false, ended: false,
     offset: 0, maxOffset: 0, pxPerWord: 1,
-    blob: null, url: null, name: '', wakeLock: null, textOnly: false
+    blob: null, url: null, name: '', wakeLock: null, textOnly: false,
+    fit: 'contain', deviceId: null, cams: []
   };
 
   // ---- restore saved settings ----
@@ -298,6 +313,8 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
   const ss = Number(store.get('prompter-size')); if (ss >= 22 && ss <= 60) S.size = ss;
   const sf = store.get('prompter-facing'); if (sf === 'user' || sf === 'environment') S.facing = sf;
   if (store.get('prompter-countdown') === '0') S.useCountdown = false;
+  if (store.get('prompter-fit') === 'cover') S.fit = 'cover';
+  S.deviceId = store.get('prompter-device') || null;
 
   // ---- helpers ----
   const countWords = (s) => (s.trim().match(/\S+/g) || []).length;
@@ -356,6 +373,7 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
   els.size.addEventListener('input', (e) => setSize(+e.target.value));
   document.querySelectorAll('input[name="facing"]').forEach((r) => r.addEventListener('change', (e) => {
     S.facing = e.target.value; store.set('prompter-facing', S.facing);
+    S.deviceId = null; store.set('prompter-device', '');
   }));
   els.countdownOpt.addEventListener('change', (e) => {
     S.useCountdown = e.target.checked; store.set('prompter-countdown', S.useCountdown ? '1' : '0');
@@ -500,6 +518,32 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
     els.nocam.hidden = false;
     els.rec.disabled = true;
   }
+  let toastTimer = 0;
+  function toast(msg){
+    els.toast.textContent = msg;
+    els.toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { els.toast.hidden = true; }, 2800);
+  }
+  function applyFit(){
+    els.cam.classList.toggle('fill', S.fit === 'cover');
+    els.fitLabel.textContent = S.fit === 'cover' ? 'Tela cheia' : 'Imagem inteira';
+  }
+  function detectFacing(track){
+    let f = '';
+    try { f = track.getSettings().facingMode || ''; } catch (_) {}
+    if (f === 'user' || f === 'environment') return f;
+    const l = (track.label || '').toLowerCase();
+    if (/front|frontal|user|face|selfie/.test(l)) return 'user';
+    if (/back|rear|traseir|environment|world/.test(l)) return 'environment';
+    return S.facing;
+  }
+  async function listCameras(){
+    try {
+      const all = await navigator.mediaDevices.enumerateDevices();
+      return all.filter((d) => d.kind === 'videoinput' && d.deviceId);
+    } catch (_) { return []; }
+  }
   async function startCamera(){
     stopStream();
     if (S.textOnly) setTextOnly(false);
@@ -510,25 +554,52 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
       if (!md || !md.getUserMedia){ const err = new Error('unsupported'); err.name = 'Unsupported'; throw err; }
       if (typeof MediaRecorder === 'undefined'){ const err = new Error('norec'); err.name = 'NoRecorder'; throw err; }
       const audio = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+      // Ask for the camera's own widescreen format and forbid cropping: the phone
+      // rotates it to vertical by itself, so the full lens image is kept.
+      const video = { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 }, resizeMode: { ideal: 'none' } };
+      if (S.deviceId) video.deviceId = { exact: S.deviceId };
+      else video.facingMode = { ideal: S.facing };
       let stream;
       try {
-        stream = await md.getUserMedia({
-          video: { facingMode: { ideal: S.facing }, width: { ideal: 1080 }, height: { ideal: 1920 }, frameRate: { ideal: 30 } },
-          audio
-        });
+        stream = await md.getUserMedia({ video, audio });
       } catch (e) {
         if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) throw e;
+        S.deviceId = null; store.set('prompter-device', '');
         stream = await md.getUserMedia({ video: { facingMode: S.facing }, audio: true });
       }
       if (els.studio.hidden || S.textOnly){ stream.getTracks().forEach((t) => t.stop()); return; }
       S.stream = stream;
+      const track = stream.getVideoTracks()[0];
+      try { const id = track.getSettings().deviceId; if (id){ S.deviceId = id; store.set('prompter-device', id); } } catch (_) {}
+      S.facing = detectFacing(track);
+      store.set('prompter-facing', S.facing);
+      syncFacing();
       els.cam.srcObject = stream;
       els.cam.classList.toggle('mirror', S.facing === 'user');
+      applyFit();
       try { await els.cam.play(); } catch (_) {}
       els.rec.disabled = false;
+      S.cams = await listCameras();
     } catch (e) {
       showNoCam(e);
     }
+  }
+  async function nextCamera(){
+    if (S.recording || S.countingDown) return;
+    const cams = S.cams;
+    if (cams.length < 2){
+      S.facing = S.facing === 'user' ? 'environment' : 'user';
+      S.deviceId = null;
+      await startCamera();
+      return;
+    }
+    const idx = cams.findIndex((c) => c.deviceId === S.deviceId);
+    const n = (idx + 1) % cams.length;
+    S.deviceId = cams[n].deviceId;
+    await startCamera();
+    if (!S.stream) return;
+    const label = cams[n].label ? ' · ' + cams[n].label : '';
+    toast(`Câmera ${n + 1} de ${cams.length}${label}`);
   }
 
   // ---- wake lock ----
@@ -645,12 +716,14 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
 
   els.open.addEventListener('click', openStudio);
   els.back.addEventListener('click', () => { if (!S.recording && !S.countingDown) leaveStudio(); });
-  els.flip.addEventListener('click', () => {
-    if (S.recording || S.countingDown) return;
-    S.facing = S.facing === 'user' ? 'environment' : 'user';
-    store.set('prompter-facing', S.facing);
-    syncFacing();
-    startCamera();
+  els.flip.addEventListener('click', nextCamera);
+  els.fit.addEventListener('click', () => {
+    S.fit = S.fit === 'cover' ? 'contain' : 'cover';
+    store.set('prompter-fit', S.fit);
+    applyFit();
+    toast(S.fit === 'cover'
+      ? 'Tela cheia: a tela corta as bordas, mas o vídeo grava a imagem inteira'
+      : 'Imagem inteira: você vê exatamente o que está sendo gravado');
   });
   els.retry.addEventListener('click', startCamera);
   els.textOnly.addEventListener('click', () => setTextOnly(true));
@@ -681,6 +754,7 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
   setWpm(S.wpm);
   setSize(S.size);
   syncFacing();
+  applyFit();
   els.countdownOpt.checked = S.useCountdown;
   updateEstimate();
 })();
