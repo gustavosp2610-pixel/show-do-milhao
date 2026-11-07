@@ -85,7 +85,8 @@ input[type=range]{width:100%;accent-color:var(--cue);height:28px;margin:0}
 #cam{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--stage)}
 #cam.fill{object-fit:cover}
 #cam.mirror{transform:scaleX(-1)}
-.frame-row{display:flex;align-items:center;justify-content:flex-start}
+.frame-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.version{margin:0;color:var(--muted);font-size:.78rem;letter-spacing:.06em}
 .pill svg{width:16px;height:16px;flex:none}
 .pill.has-icon{display:inline-flex;align-items:center;gap:7px}
 .toast{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);margin:0;max-width:calc(100% - 48px);width:max-content;text-align:center;background:var(--scrim);border:1px solid var(--line);font-size:.92rem;font-weight:700;line-height:1.35;padding:10px 14px;border-radius:12px;pointer-events:none}
@@ -211,7 +212,9 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
     <li>Toque no texto para pausar ou continuar a rolagem.</li>
     <li>Arraste o texto para voltar ou adiantar.</li>
     <li>Use − e + para mudar a velocidade durante a gravação.</li>
+    <li>Imagem muito perto? Toque em “Vertical 9:16” para mudar para “Mais aberto 3:4” ou use “Trocar câmera”.</li>
   </ul>
+  <p class="version">Versão 3</p>
 </main>
 
 <section id="studio" class="studio" hidden aria-label="Gravação">
@@ -243,6 +246,7 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/></svg>
         <span id="fitLabel">Imagem inteira</span>
       </button>
+      <button id="format" class="pill" type="button">Vertical 9:16</button>
     </div>
     <div class="row">
       <button id="back" class="pill" type="button">‹ Texto</button>
@@ -288,7 +292,7 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
   ['editor','studio','result','script','clear','estimate','wpm','wpmOut','size','sizeOut','countdownOpt','open',
    'cam','prompter','viewport','text','chip','nocam','nocamMsg','retry','textOnly','countdown','back','timerText',
    'flip','slower','faster','speedOut','rec','restart','playback','fileinfo','share','download','again','edit',
-   'fit','fitLabel','toast']
+   'fit','fitLabel','toast','format']
     .forEach((id) => { els[id] = $(id); });
 
   const store = {
@@ -303,7 +307,7 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
     scrolling: false, paused: false, ended: false,
     offset: 0, maxOffset: 0, pxPerWord: 1,
     blob: null, url: null, name: '', wakeLock: null, textOnly: false,
-    fit: 'contain', deviceId: null, cams: []
+    fit: 'contain', deviceId: null, cams: [], format: '916'
   };
 
   // ---- restore saved settings ----
@@ -315,6 +319,7 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
   if (store.get('prompter-countdown') === '0') S.useCountdown = false;
   if (store.get('prompter-fit') === 'cover') S.fit = 'cover';
   S.deviceId = store.get('prompter-device') || null;
+  if (store.get('prompter-format') === '34') S.format = '34';
 
   // ---- helpers ----
   const countWords = (s) => (s.trim().match(/\S+/g) || []).length;
@@ -556,7 +561,10 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
       const audio = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
       // Ask for the camera's own widescreen format and forbid cropping: the phone
       // rotates it to vertical by itself, so the full lens image is kept.
-      const video = { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 }, resizeMode: { ideal: 'none' } };
+      // 3:4 uses the whole sensor (widest view); 9:16 is the Reels shape.
+      const video = S.format === '34'
+        ? { width: { ideal: 1920 }, height: { ideal: 1440 }, frameRate: { ideal: 30 }, resizeMode: { ideal: 'none' } }
+        : { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 }, resizeMode: { ideal: 'none' } };
       if (S.deviceId) video.deviceId = { exact: S.deviceId };
       else video.facingMode = { ideal: S.facing };
       let stream;
@@ -578,11 +586,33 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
       els.cam.classList.toggle('mirror', S.facing === 'user');
       applyFit();
       try { await els.cam.play(); } catch (_) {}
+      // Some phones open with digital zoom on: go back to the lens's widest setting.
+      try {
+        const caps = track.getCapabilities ? track.getCapabilities() : {};
+        const st = track.getSettings();
+        if (caps.zoom && typeof caps.zoom.min === 'number' && typeof st.zoom === 'number' && st.zoom > caps.zoom.min)
+          await track.applyConstraints({ advanced: [{ zoom: caps.zoom.min }] });
+      } catch (_) {}
       els.rec.disabled = false;
       S.cams = await listCameras();
+      showCameraInfo(track);
     } catch (e) {
       showNoCam(e);
     }
+  }
+  function showCameraInfo(track){
+    const w = els.cam.videoWidth, h = els.cam.videoHeight;
+    const parts = [];
+    if (S.cams.length > 1){
+      const i = S.cams.findIndex((c) => c.deviceId === S.deviceId);
+      if (i > -1) parts.push(`Câmera ${i + 1} de ${S.cams.length}`);
+    }
+    if (track.label) parts.push(track.label.length > 34 ? track.label.slice(0, 33) + '…' : track.label);
+    if (w && h) parts.push(`${w}×${h}`);
+    if (parts.length) toast(parts.join(' · '));
+  }
+  function applyFormatLabel(){
+    els.format.textContent = S.format === '34' ? 'Mais aberto 3:4' : 'Vertical 9:16';
   }
   async function nextCamera(){
     if (S.recording || S.countingDown) return;
@@ -597,9 +627,6 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
     const n = (idx + 1) % cams.length;
     S.deviceId = cams[n].deviceId;
     await startCamera();
-    if (!S.stream) return;
-    const label = cams[n].label ? ' · ' + cams[n].label : '';
-    toast(`Câmera ${n + 1} de ${cams.length}${label}`);
   }
 
   // ---- wake lock ----
@@ -717,6 +744,13 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
   els.open.addEventListener('click', openStudio);
   els.back.addEventListener('click', () => { if (!S.recording && !S.countingDown) leaveStudio(); });
   els.flip.addEventListener('click', nextCamera);
+  els.format.addEventListener('click', async () => {
+    if (S.recording || S.countingDown) return;
+    S.format = S.format === '34' ? '916' : '34';
+    store.set('prompter-format', S.format);
+    applyFormatLabel();
+    await startCamera();
+  });
   els.fit.addEventListener('click', () => {
     S.fit = S.fit === 'cover' ? 'contain' : 'cover';
     store.set('prompter-fit', S.fit);
@@ -755,6 +789,7 @@ E me conta aqui nos comentários: você teria coragem de fazer essa mudança?</t
   setSize(S.size);
   syncFacing();
   applyFit();
+  applyFormatLabel();
   els.countdownOpt.checked = S.useCountdown;
   updateEstimate();
 })();
